@@ -14,6 +14,32 @@ import qualified Data.ByteString.Lazy as BS
 -------Domain Data Types-------
 -------------------------------
 
+-- | Params of job for h2o-cluster
+data JobParams = 
+  JobParams { inputParams  :: InputParams
+            , gbmParams    :: GbmParams
+            , outputParams :: OutputParams 
+            } deriving (Show, Generic)
+
+instance FromJSON JobParams
+instance ToJSON JobParams
+
+data InputParams = 
+  InputParams { dataFilename :: FilePath
+              } deriving (Show, Generic)
+
+instance FromJSON InputParams
+instance ToJSON InputParams
+
+data OutputParams = 
+  OutputParams { msePlotFileName    :: FilePath
+               , confMatrixFileName :: FilePath
+               , gbmParamsFileName  :: FilePath
+               } deriving (Show, Generic)
+
+instance FromJSON OutputParams
+instance ToJSON OutputParams
+
 type FactorName = T.Text 
 
 type FactorNumber = Int 
@@ -39,6 +65,21 @@ filenames dir = map namewrap [1..]
     namewrap n = dir ++ "cfg" ++ show n ++ ".json" 
 
 -----------------------
+-------Constants-------
+-----------------------
+
+inp1 :: InputParams
+inp1 = 
+  InputParams { dataFilename = "data.csv"
+              }
+
+out1 :: OutputParams
+out1 = 
+  OutputParams { msePlotFileName    = "plot.png"
+               , confMatrixFileName = "confMatr.csv"
+               , gbmParamsFileName  = "gbmParams.json"
+               }
+-----------------------
 -------Main Code-------
 -----------------------
 
@@ -50,8 +91,15 @@ generateGbmParams = map (uncurryN GbmParams) $
   , ntrees  <- [1,2,3]
   ]
 
+generateJobParams :: [JobParams]
+generateJobParams = map (uncurryN JobParams) $ 
+  [(input, gbm, output)
+  | input  <- [inp1]
+  , gbm    <- generateGbmParams
+  , output <- [out1] 
+  ]
 main = 
   zipWithM_ BS.writeFile 
             (filenames "input/config/") 
-            (map encodePretty generateGbmParams)
+            (map encodePretty generateJobParams)
       
