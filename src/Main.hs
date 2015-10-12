@@ -1,5 +1,6 @@
 {-# Language OverloadedStrings #-}
-{-# Language DeriveGeneric #-}
+
+module Main where
 
 import Control.Monad
 import Control.Applicative
@@ -7,51 +8,10 @@ import Data.Aeson
 import Data.Aeson.Encode.Pretty
 import Data.Tuple.Curry(uncurryN)
 import qualified Data.Text as T 
-import GHC.Generics
 import qualified Data.ByteString.Lazy as BS
 
--------------------------------
--------Domain Data Types-------
--------------------------------
-
--- | Params of job for h2o-cluster
-data JobParams = 
-  JobParams { inputParams  :: InputParams
-            , gbmParams    :: GbmParams
-            , outputParams :: OutputParams 
-            } deriving (Show, Generic)
-
-instance FromJSON JobParams
-instance ToJSON JobParams
-
-data InputParams = 
-  InputParams { dataFilename :: FilePath
-              } deriving (Show, Generic)
-
-instance FromJSON InputParams
-instance ToJSON InputParams
-
-data OutputParams = 
-  OutputParams { msePlotFileName    :: FilePath
-               , confMatrixFileName :: FilePath
-               , gbmParamsFileName  :: FilePath
-               } deriving (Show, Generic)
-
-instance FromJSON OutputParams
-instance ToJSON OutputParams
-
-type FactorName = T.Text 
-
-type FactorNumber = Int 
-
-data GbmParams = 
-  GbmParams { y      :: FactorName
-            , xs     :: [FactorNumber]
-            , ntrees :: Int
-            } deriving (Show, Generic)
-
-instance FromJSON GbmParams
-instance ToJSON GbmParams
+import Types
+import GbmParamsRanges
 
 ---------------------------------
 -------Auxiliary Functions-------
@@ -68,13 +28,13 @@ filenames dir = map namewrap [1..]
 -------Constants-------
 -----------------------
 
-inp1 :: InputParams
-inp1 = 
-  InputParams { dataFilename = "data.csv"
+defaultInput :: InputParams
+defaultInput = 
+  InputParams { dataFilename = "data/trEmpt.csv"
               }
 
-out1 :: OutputParams
-out1 = 
+defaultOutput :: OutputParams
+defaultOutput = 
   OutputParams { msePlotFileName    = "plot.png"
                , confMatrixFileName = "confMatr.csv"
                , gbmParamsFileName  = "gbmParams.json"
@@ -85,21 +45,31 @@ out1 =
 
 generateGbmParams :: [GbmParams]
 generateGbmParams = map (uncurryN GbmParams) $ 
-  [(y, xs, ntrees) 
-  | y       <- ["responce"]
-  , xs      <- [[1..3]]
-  , ntrees  <- [1,2,3]
+  [(y, xs, ntrees, max_depth, min_rows, learn_rate, nbins, nbins_cats,
+    nfolds, balance_classes, max_after_balance_size, score_each_iteration) 
+  | y       <- ["y"]
+  , xs                     <- xs_range
+  , ntrees                 <- ntrees_range
+  , max_depth              <- max_depth_range
+  , min_rows               <- min_rows_range
+  , learn_rate             <- learn_rate_range                          
+  , nbins                  <- nbins_range
+  , nbins_cats             <- nbins_cats_range
+  , nfolds                 <- nfolds_range
+  , balance_classes        <- balance_classes_range
+  , max_after_balance_size <- max_after_balance_size_range
+  , score_each_iteration   <- score_each_iteration_range
   ]
 
 generateJobParams :: [JobParams]
 generateJobParams = map (uncurryN JobParams) $ 
   [(input, gbm, output)
-  | input  <- [inp1]
+  | input  <- [defaultInput]
   , gbm    <- generateGbmParams
-  , output <- [out1] 
+  , output <- [defaultOutput] 
   ]
 main = 
   zipWithM_ BS.writeFile 
-            (filenames "input/config/") 
+            (filenames "result/") 
             (map encodePretty generateJobParams)
       
