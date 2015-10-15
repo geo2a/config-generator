@@ -1,23 +1,44 @@
 {-# Language DeriveGeneric #-}
+{-# Language FlexibleInstances #-}
+{-# Language OverloadedStrings #-}
+
 module Types where
 
 import qualified Data.Text as T
 import Data.Aeson
 import GHC.Generics
+import Data.Tuple.Curry(uncurryN)
+
+import GbmParams as GBM
+import RandomForestParams as RF
 
 -------------------------------
 -------Domain Data Types-------
 -------------------------------
 
+-- | This typeclass abstracts params generation for various methods, such as 
+-- | h2o.gbm, h2o.randomForest etc.  
+class MethodParams a where
+  generateMethodParams :: [a]
+
+instance MethodParams GBM.GbmParams where
+  generateMethodParams = GBM.generateGbmParams
+
+instance MethodParams RF.RandomForestParams where
+  generateMethodParams = RF.generateRandomForestParams  
+
 -- | Params of job for h2o-cluster
-data JobParams = 
+data JobParams a = 
   JobParams { inputParams  :: InputParams
-            , gbmParams    :: GbmParams
+            , methodParams :: a
             , outputParams :: OutputParams 
             } deriving (Show, Generic)
 
-instance FromJSON JobParams
-instance ToJSON JobParams
+instance FromJSON (JobParams GBM.GbmParams)
+instance ToJSON (JobParams GBM.GbmParams)
+
+instance FromJSON (JobParams RF.RandomForestParams)
+instance ToJSON (JobParams RF.RandomForestParams)
 
 data InputParams = 
   InputParams { dataFilename :: FilePath
@@ -34,26 +55,3 @@ data OutputParams =
 
 instance FromJSON OutputParams
 instance ToJSON OutputParams
-
-type FactorName = T.Text 
-
-type FactorNumber = Int 
-
--- | Params of h2o.gbm procedure
-data GbmParams = 
-  GbmParams { y      :: FactorName
-            , xs     :: [FactorNumber]
-            , ntrees :: Int
-            , max_depth :: Int
-            , min_rows :: Int
-            , learn_rate :: Double
-            , nbins :: Int
-            , nbins_cats :: Int
-            , nfolds :: Int
-            , balance_classes :: Bool
-            , max_after_balance_size :: Double
-            , score_each_iteration :: Bool
-            } deriving (Show, Generic)
-
-instance FromJSON GbmParams
-instance ToJSON GbmParams

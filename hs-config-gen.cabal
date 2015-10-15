@@ -17,7 +17,9 @@ cabal-version:       >=1.10
 
 executable hs-config-gen
   main-is:             Main.hs
-  other-modules:  Types, GbmParamsRanges       
+  other-modules: Types
+               , GbmParams
+               , RandomForestParams      
   -- other-extensions:    
   build-depends:       base >=4.8 && <4.9
                        , text
