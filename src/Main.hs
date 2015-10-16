@@ -62,5 +62,6 @@ generateRandomForestJobs = map (uncurryN JobParams) $
 
 main = 
   zipWithM_ BS.writeFile 
-            (filenames "result/") 
-            (map encodePretty generateGbmJobs)
+            (filenames "result/")
+            (map encodePretty generateRandomForestJobs)
+            --(map encodePretty generateGbmJobs)

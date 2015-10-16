@@ -59,7 +59,7 @@ xs_range :: [[Int]]
 xs_range =  [[0..61] ++ [63..69]]
 
 mtries_range :: [Int]
-mtries_range = [200]
+mtries_range = [25]
 
 sample_rate_range :: [Double]
 sample_rate_range = [0.2]
