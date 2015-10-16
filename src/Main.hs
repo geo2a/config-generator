@@ -8,7 +8,6 @@ import Data.Aeson
 import Data.Aeson.Encode.Pretty
 import qualified Data.Text as T 
 import qualified Data.ByteString.Lazy as BS
-import Data.Tuple.Curry(uncurryN)
 
 import Types
 import GbmParams as GBM
@@ -28,7 +27,6 @@ filenames dir = map namewrap [1..]
 -----------------------
 -------Constants-------
 -----------------------
-
 defaultInput :: InputParams
 defaultInput = 
   InputParams { dataFilename = "data/trEmpt.csv"
@@ -40,27 +38,59 @@ defaultOutput =
                , confMatrixFileName = "confMatr.csv"
                , gbmParamsFileName  = "gbmParams.json"
                }
+
+defaultGbmParamsRanges :: GbmParamsRanges
+defaultGbmParamsRanges = 
+  GBM.GbmParamsRanges 
+    { GBM.y_range                      = ["y"]
+    , GBM.xs_range                     = [[1]]
+    , GBM.ntrees_range                 = [5]
+    , GBM.max_depth_range              = [3]
+    , GBM.min_rows_range               = [2]
+    , GBM.learn_rate_range             = [0.1]
+    , GBM.nbins_range                  = [2]
+    , GBM.nbins_cats_range             = [2]
+    , GBM.nfolds_range                 = [0]
+    , GBM.balance_classes_range        = [True]
+    , GBM.max_after_balance_size_range = [0.1]
+    , GBM.score_each_iteration_range   = [False]
+    }
+
+defaultRandomForestParamsRanges :: RandomForestParamsRanges
+defaultRandomForestParamsRanges = undefined
+
 -----------------------
 -------Main Code-------
 -----------------------
+--generateJobs :: MethodParams ranges params => ranges -> [Job params]
+--generateJobs ranges = 
+--  [Job input methodParams output
+--  | input        <- [defaultInput]
+--  , methodParams <- generateMethodParams ranges 
+--  , output       <- [defaultOutput] 
+--  ]  
 
-generateGbmJobs :: [JobParams GbmParams]
-generateGbmJobs = map (uncurryN JobParams) $ 
-  [(input, gbm, output)
+
+generateGbmJobs :: GbmParamsRanges -> [Job GbmParams]
+generateGbmJobs ranges =  
+  [Job input gbm output
   | input  <- [defaultInput]
-  , gbm    <- generateGbmParams
+  , gbm    <- generateMethodParams ranges 
   , output <- [defaultOutput] 
   ]
 
-generateRandomForestJobs :: [JobParams RandomForestParams]
-generateRandomForestJobs = map (uncurryN JobParams) $ 
-  [(input, rf, output)
+generateRandomForestJobs :: RandomForestParamsRanges -> [Job RandomForestParams]
+generateRandomForestJobs ranges = 
+  [Job input rf output
   | input  <- [defaultInput]
-  , rf    <- generateRandomForestParams
+  , rf    <- generateMethodParams ranges
   , output <- [defaultOutput] 
-  ]
+  ] 
+
+t :: GbmParamsRanges
+t = undefined
 
 main = 
   zipWithM_ BS.writeFile 
-            (filenames "result/") 
-            (map encodePretty generateGbmJobs)
+            (filenames "output/") 
+            (map encodePretty $ generateGbmJobs t)

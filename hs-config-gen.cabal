@@ -26,6 +26,6 @@ executable hs-config-gen
                        , bytestring
                        , aeson
                        , aeson-pretty
-                       , tuple
+                       , mtl
   hs-source-dirs:      src     
   default-language:    Haskell2010

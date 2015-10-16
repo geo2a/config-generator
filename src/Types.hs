@@ -1,13 +1,14 @@
 {-# Language DeriveGeneric #-}
 {-# Language FlexibleInstances #-}
 {-# Language OverloadedStrings #-}
+{-# Language MultiParamTypeClasses #-}
+{-# Language FunctionalDependencies #-}
 
 module Types where
 
 import qualified Data.Text as T
 import Data.Aeson
 import GHC.Generics
-import Data.Tuple.Curry(uncurryN)
 
 import GbmParams as GBM
 import RandomForestParams as RF
@@ -18,27 +19,27 @@ import RandomForestParams as RF
 
 -- | This typeclass abstracts params generation for various methods, such as 
 -- | h2o.gbm, h2o.randomForest etc.  
-class MethodParams a where
-  generateMethodParams :: [a]
+class MethodParams ranges params | params -> ranges where
+  generateMethodParams :: ranges -> [params]
 
-instance MethodParams GBM.GbmParams where
+instance MethodParams GBM.GbmParamsRanges GBM.GbmParams where
   generateMethodParams = GBM.generateGbmParams
 
-instance MethodParams RF.RandomForestParams where
+instance MethodParams RF.RandomForestParamsRanges RF.RandomForestParams where
   generateMethodParams = RF.generateRandomForestParams  
 
 -- | Params of job for h2o-cluster
-data JobParams a = 
-  JobParams { inputParams  :: InputParams
+data Job a = 
+  Job { inputParams  :: InputParams
             , methodParams :: a
             , outputParams :: OutputParams 
             } deriving (Show, Generic)
 
-instance FromJSON (JobParams GBM.GbmParams)
-instance ToJSON (JobParams GBM.GbmParams)
+instance FromJSON (Job GBM.GbmParams)
+instance ToJSON (Job GBM.GbmParams)
 
-instance FromJSON (JobParams RF.RandomForestParams)
-instance ToJSON (JobParams RF.RandomForestParams)
+instance FromJSON (Job RF.RandomForestParams)
+instance ToJSON (Job RF.RandomForestParams)
 
 data InputParams = 
   InputParams { dataFilename :: FilePath
