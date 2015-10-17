@@ -19,7 +19,7 @@ import RandomForestParams as RF
 
 -- | This typeclass abstracts params generation for various methods, such as 
 -- | h2o.gbm, h2o.randomForest etc.  
-class MethodParams ranges params | params -> ranges where
+class MethodParams ranges params | ranges -> params where
   generateMethodParams :: ranges -> [params]
 
 instance MethodParams GBM.GbmParamsRanges GBM.GbmParams where
@@ -51,7 +51,7 @@ instance ToJSON InputParams
 data OutputParams = 
   OutputParams { msePlotFileName    :: FilePath
                , confMatrixFileName :: FilePath
-               , gbmParamsFileName  :: FilePath
+               , paramsFileName     :: FilePath
                } deriving (Show, Generic)
 
 instance FromJSON OutputParams

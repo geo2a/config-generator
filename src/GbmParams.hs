@@ -44,6 +44,9 @@ data GbmParamsRanges =
                   , score_each_iteration_range   :: [Bool]
                   } deriving (Show, Generic)
 
+instance FromJSON GbmParamsRanges
+instance ToJSON GbmParamsRanges
+
 -- Как избавиться от лишнего кода в результирующем выражении генератора списка? 
 generateGbmParams :: GbmParamsRanges -> [GbmParams]
 generateGbmParams cfg =   

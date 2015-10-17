@@ -8,6 +8,7 @@ import Data.Aeson
 import Data.Aeson.Encode.Pretty
 import qualified Data.Text as T 
 import qualified Data.ByteString.Lazy as BS
+import System.Environment
 
 import Types
 import GbmParams as GBM
@@ -36,7 +37,7 @@ defaultOutput :: OutputParams
 defaultOutput = 
   OutputParams { msePlotFileName    = "plot.png"
                , confMatrixFileName = "confMatr.csv"
-               , gbmParamsFileName  = "gbmParams.json"
+               , paramsFileName     = "params.json"
                }
 
 defaultGbmParamsRanges :: GbmParamsRanges
@@ -62,35 +63,48 @@ defaultRandomForestParamsRanges = undefined
 -----------------------
 -------Main Code-------
 -----------------------
---generateJobs :: MethodParams ranges params => ranges -> [Job params]
---generateJobs ranges = 
---  [Job input methodParams output
---  | input        <- [defaultInput]
---  , methodParams <- generateMethodParams ranges 
---  , output       <- [defaultOutput] 
---  ]  
+generateJobs :: MethodParams ranges params => ranges -> [Job params]
+generateJobs ranges = 
+  [Job input methodParams output
+  | input        <- [defaultInput]
+  , methodParams <- generateMethodParams ranges 
+  , output       <- [defaultOutput] 
+  ]  
 
 
-generateGbmJobs :: GbmParamsRanges -> [Job GbmParams]
-generateGbmJobs ranges =  
+generateJobsGbm :: GbmParamsRanges -> [Job GbmParams]
+generateJobsGbm ranges =  
   [Job input gbm output
   | input  <- [defaultInput]
   , gbm    <- generateMethodParams ranges 
   , output <- [defaultOutput] 
   ]
 
-generateRandomForestJobs :: RandomForestParamsRanges -> [Job RandomForestParams]
-generateRandomForestJobs ranges = 
-  [Job input rf output
-  | input  <- [defaultInput]
-  , rf    <- generateMethodParams ranges
-  , output <- [defaultOutput] 
-  ] 
+--generateRandomForestJobs :: RandomForestParamsRanges -> [Job RandomForestParams]
+--generateRandomForestJobs ranges = 
+--  [Job input rf output
+--  | input  <- [defaultInput]
+--  , rf    <- generateMethodParams ranges
+--  , output <- [defaultOutput] 
+--  ] 
 
-t :: GbmParamsRanges
-t = undefined
-
-main = 
+saveJobsGbm :: [Job GbmParams] -> IO ()
+saveJobsGbm jobs = 
   zipWithM_ BS.writeFile 
             (filenames "output/") 
-            (map encodePretty $ generateGbmJobs t)
+            (map encodePretty $ jobs)
+
+--saveJobs :: MethodParams ranges params => [Job params] -> IO ()
+--saveJobs jobs = 
+--  zipWithM_ BS.writeFile 
+--            (filenames "output/") 
+--            (map encodePretty $ jobs) 
+
+main = do
+  args <- getArgs
+  contents <- BS.readFile $ head args 
+  case decode contents of 
+    Nothing -> 
+      print "Error: invalid config file"
+    Just ranges -> 
+      saveJobsGbm $ generateJobsGbm ranges
