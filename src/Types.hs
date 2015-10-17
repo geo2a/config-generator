@@ -19,7 +19,7 @@ import RandomForestParams as RF
 
 -- | This typeclass abstracts params generation for various methods, such as 
 -- | h2o.gbm, h2o.randomForest etc.  
-class MethodParams ranges params | ranges -> params where
+class MethodParams ranges params | ranges -> params, params -> ranges where
   generateMethodParams :: ranges -> [params]
 
 instance MethodParams GBM.GbmParamsRanges GBM.GbmParams where
@@ -31,9 +31,9 @@ instance MethodParams RF.RandomForestParamsRanges RF.RandomForestParams where
 -- | Params of job for h2o-cluster
 data Job a = 
   Job { inputParams  :: InputParams
-            , methodParams :: a
-            , outputParams :: OutputParams 
-            } deriving (Show, Generic)
+      , methodParams :: a
+      , outputParams :: OutputParams 
+      } deriving (Show, Generic)
 
 instance FromJSON (Job GBM.GbmParams)
 instance ToJSON (Job GBM.GbmParams)

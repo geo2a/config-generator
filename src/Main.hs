@@ -65,28 +65,11 @@ defaultRandomForestParamsRanges = undefined
 -----------------------
 generateJobs :: MethodParams ranges params => ranges -> [Job params]
 generateJobs ranges = 
-  [Job input methodParams output
-  | input        <- [defaultInput]
-  , methodParams <- generateMethodParams ranges 
-  , output       <- [defaultOutput] 
-  ]  
-
-
-generateJobsGbm :: GbmParamsRanges -> [Job GbmParams]
-generateJobsGbm ranges =  
-  [Job input gbm output
-  | input  <- [defaultInput]
-  , gbm    <- generateMethodParams ranges 
-  , output <- [defaultOutput] 
-  ]
-
---generateRandomForestJobs :: RandomForestParamsRanges -> [Job RandomForestParams]
---generateRandomForestJobs ranges = 
---  [Job input rf output
---  | input  <- [defaultInput]
---  , rf    <- generateMethodParams ranges
---  , output <- [defaultOutput] 
---  ] 
+  Job                           <$>
+    [defaultInput]              <*>
+    generateMethodParams ranges <*> 
+    [defaultOutput]             <*> 
+    
 
 saveJobsGbm :: [Job GbmParams] -> IO ()
 saveJobsGbm jobs = 
@@ -107,4 +90,4 @@ main = do
     Nothing -> 
       print "Error: invalid config file"
     Just ranges -> 
-      saveJobsGbm $ generateJobsGbm ranges
+      saveJobsGbm $ generateJobs ranges

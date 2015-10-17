@@ -39,33 +39,20 @@ data RandomForestParamsRanges =
                            , nfolds_range                 :: [Int]
                            , balance_classes_range        :: [Bool]
                            , max_after_balance_size_range :: [Double]
-                     } deriving (Show, Generic)
+                           } deriving (Show, Generic)
 
 generateRandomForestParams :: RandomForestParamsRanges -> [RandomForestParams]
 generateRandomForestParams cfg =  
-  [RandomForestParams 
-    y
-    xs
-    mtries
-    sample_rate
-    ntrees                
-    max_depth             
-    min_rows              
-    nbins                 
-    nbins_cats            
-    nfolds                
-    balance_classes       
-    max_after_balance_size
-  | y                      <- y_range cfg
-  , xs                     <- xs_range cfg
-  , mtries                 <- mtries_range cfg
-  , sample_rate            <- sample_rate_range cfg
-  , ntrees                 <- ntrees_range cfg                
-  , max_depth              <- max_depth_range cfg             
-  , min_rows               <- min_rows_range cfg              
-  , nbins                  <- nbins_range cfg                 
-  , nbins_cats             <- nbins_cats_range cfg            
-  , nfolds                 <- nfolds_range cfg                
-  , balance_classes        <- balance_classes_range cfg       
-  , max_after_balance_size <- max_after_balance_size_range cfg
-  ]
+  RandomForestParams                 <$> 
+    y_range cfg                      <*>
+    xs_range cfg                     <*>
+    mtries_range cfg                 <*>
+    sample_rate_range cfg            <*>
+    ntrees_range cfg                 <*>                
+    max_depth_range cfg              <*>             
+    min_rows_range cfg               <*>              
+    nbins_range cfg                  <*>                 
+    nbins_cats_range cfg             <*>            
+    nfolds_range cfg                 <*>                
+    balance_classes_range cfg        <*>       
+    max_after_balance_size_range cfg
