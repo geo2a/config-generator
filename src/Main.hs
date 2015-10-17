@@ -68,7 +68,7 @@ generateJobs ranges =
   Job                           <$>
     [defaultInput]              <*>
     generateMethodParams ranges <*> 
-    [defaultOutput]             <*> 
+    [defaultOutput]
     
 
 saveJobsGbm :: [Job GbmParams] -> IO ()

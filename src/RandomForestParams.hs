@@ -3,8 +3,10 @@
 
 module RandomForestParams where
 
-import GHC.Generics
+import GHC.Generics as GHC
 import Data.Aeson
+
+
 
 -- | Params of h2o.randomForest procedure
 data RandomForestParams = 
@@ -20,7 +22,7 @@ data RandomForestParams =
                      , nfolds                 :: Int
                      , balance_classes        :: Bool
                      , max_after_balance_size :: Double
-                     } deriving (Show, Generic)
+                     } deriving (Show, GHC.Generic)
 
 instance FromJSON RandomForestParams
 instance ToJSON RandomForestParams
@@ -39,7 +41,7 @@ data RandomForestParamsRanges =
                            , nfolds_range                 :: [Int]
                            , balance_classes_range        :: [Bool]
                            , max_after_balance_size_range :: [Double]
-                           } deriving (Show, Generic)
+                           } deriving (Show, GHC.Generic)
 
 generateRandomForestParams :: RandomForestParamsRanges -> [RandomForestParams]
 generateRandomForestParams cfg =  
@@ -56,4 +58,3 @@ generateRandomForestParams cfg =
     nfolds_range cfg                 <*>                
     balance_classes_range cfg        <*>       
     max_after_balance_size_range cfg
-    

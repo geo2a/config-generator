@@ -3,11 +3,8 @@
 
 module GbmParams where
 
-import GHC.Generics
+import GHC.Generics as GHC
 import Data.Aeson
-import Control.Monad
-import Control.Monad.Reader
-import Control.Applicative
 
 -- | Params of h2o.gbm procedure
 data GbmParams = 
@@ -23,7 +20,7 @@ data GbmParams =
             , balance_classes        :: Bool
             , max_after_balance_size :: Double
             , score_each_iteration   :: Bool
-            } deriving (Show, Generic)
+            } deriving (Show, GHC.Generic)
 
 instance FromJSON GbmParams
 instance ToJSON GbmParams
@@ -43,7 +40,7 @@ data GbmParamsRanges =
                   , balance_classes_range        :: [Bool]
                   , max_after_balance_size_range :: [Double]
                   , score_each_iteration_range   :: [Bool]
-                  } deriving (Show, Generic)
+                  } deriving (Show, GHC.Generic)
 
 instance FromJSON GbmParamsRanges
 instance ToJSON GbmParamsRanges
