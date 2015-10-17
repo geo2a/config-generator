@@ -56,3 +56,4 @@ generateRandomForestParams cfg =
     nfolds_range cfg                 <*>                
     balance_classes_range cfg        <*>       
     max_after_balance_size_range cfg
+    
