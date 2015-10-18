@@ -44,15 +44,15 @@ defaultGbmParamsRanges :: GbmParamsRanges
 defaultGbmParamsRanges = 
   GBM.GbmParamsRanges 
     { GBM.y_range                      = ["y"]
-    , GBM.xs_range                     = [[1]]
-    , GBM.ntrees_range                 = [5]
-    , GBM.max_depth_range              = [3]
-    , GBM.min_rows_range               = [2]
-    , GBM.learn_rate_range             = [0.1]
-    , GBM.nbins_range                  = [2]
-    , GBM.nbins_cats_range             = [2]
+    , GBM.xs_range                     = [[0..61] ++ [63..69]]
+    , GBM.ntrees_range                 = [100]
+    , GBM.max_depth_range              = [3..7]
+    , GBM.min_rows_range               = [1,5,10,20,50,100,200]
+    , GBM.learn_rate_range             = [0.04,0.05,0.1]
+    , GBM.nbins_range                  = [20]
+    , GBM.nbins_cats_range             = [2, 16, 1024]
     , GBM.nfolds_range                 = [0]
-    , GBM.balance_classes_range        = [True]
+    , GBM.balance_classes_range        = [False]
     , GBM.max_after_balance_size_range = [0.1]
     , GBM.score_each_iteration_range   = [False]
     }
@@ -84,11 +84,12 @@ saveJobsGbm jobs =
 --            (map encodePretty $ jobs) 
 
 main = do
-  args <- getArgs
-  guard $ not . null $ args  
-  contents <- BS.readFile $ head args 
-  case decode contents of 
-    Nothing -> 
-      print "Error: invalid config file"
-    Just ranges -> 
-      saveJobsGbm $ generateJobs ranges
+  --args <- getArgs
+  --guard $ not . null $ args  
+  --contents <- BS.readFile $ head args 
+  --case decode contents of 
+  --  Nothing -> 
+  --    print "Error: invalid config file"
+  --  Just ranges -> 
+  --    saveJobsGbm $ generateJobs ranges
+  saveJobsGbm $ generateJobs defaultGbmParamsRanges
