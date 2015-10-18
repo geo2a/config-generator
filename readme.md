@@ -3,8 +3,43 @@
 This piece of software is designed for generating json configurations files for 
 R scripts, which will be executed on h2o-cluster.
 
+## Building
+
+1. Clone this repository.
+```
+git clone https://github.com/geo2a/config-generator.git
+```
+
+2. Enter the project directory 
+```
+cd config-generator
+```
+
+3. Initialize new cabal sandbox 
+```
+cabal sandbox init
+```
+
+4. Install dependencies
+```
+cabal install --only-dependencies
+``` 
+
+5. Build 
+```
+cabal build
+```
+
+Resulting executable will be in dist/build/hs-config-gen directory
+
 ## Usage
 
+If you have project sources and configured cabal sandbox, then type
+```
+cabal run ranges.json
+```
+
+If all you have is just an executable: 
 ```
 cfg-gen ranges.json
 ``` 
