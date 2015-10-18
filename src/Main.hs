@@ -85,6 +85,7 @@ saveJobsGbm jobs =
 
 main = do
   args <- getArgs
+  guard $ not . null $ args  
   contents <- BS.readFile $ head args 
   case decode contents of 
     Nothing -> 
