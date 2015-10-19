@@ -14,9 +14,9 @@ import GbmParams          as GBM
 import RandomForestParams as RF
 import RgfParams          as RGF
 
--------------------------------
--------Domain Data Types-------
--------------------------------
+-------------------------------------
+-------Method Params Typeclass-------
+-------------------------------------
 
 -- | This typeclass abstracts params generation for various methods, such as 
 -- | h2o.gbm, h2o.randomForest etc.  
@@ -32,34 +32,36 @@ instance MethodParams RF.RandomForestParamsRanges RF.RandomForestParams where
 instance MethodParams RGF.RgfParamsRanges RGF.RgfParams where
   generateMethodParams = RGF.generateRgfParams  
 
+------------------------------------
+-------I\O Params Typeclasses-------
+------------------------------------
+
+class InputParams a where
+
+instance InputParams GBM.InputParamsGbm
+instance InputParams RGF.InputParamsRgf
+
+class OutputParams a where
+
+instance OutputParams GBM.OutputParamsGbm
+instance OutputParams RGF.OutputParamsRgf
+
+-----------------------------------
+-------Resulting Job Params -------
+-----------------------------------
+
 -- | Params of job for h2o-cluster
-data Job a = 
-  Job { inputParams  :: InputParams
-      , methodParams :: a
-      , outputParams :: OutputParams 
+data Job a b c = 
+  Job { inputParams  :: a
+      , methodParams :: b
+      , outputParams :: c 
       } deriving (Show, Generic)
 
-instance FromJSON (Job GBM.GbmParams)
-instance ToJSON (Job GBM.GbmParams)
+instance FromJSON (Job GBM.InputParamsGbm GBM.GbmParams GBM.OutputParamsGbm)
+instance ToJSON   (Job GBM.InputParamsGbm GBM.GbmParams GBM.OutputParamsGbm)
 
-instance FromJSON (Job RF.RandomForestParams)
-instance ToJSON (Job RF.RandomForestParams)
+--instance FromJSON (Job RF.RandomForestParams)
+--instance ToJSON   (Job RF.RandomForestParams)
 
-instance FromJSON (Job RGF.RgfParams)
-instance ToJSON (Job RGF.RgfParams)
-
-data InputParams = 
-  InputParams { dataFilename :: FilePath
-              } deriving (Show, Generic)
-
-instance FromJSON InputParams
-instance ToJSON InputParams
-
-data OutputParams = 
-  OutputParams { msePlotFileName    :: FilePath
-               , confMatrixFileName :: FilePath
-               , paramsFileName     :: FilePath
-               } deriving (Show, Generic)
-
-instance FromJSON OutputParams
-instance ToJSON OutputParams
+instance FromJSON (Job RGF.InputParamsRgf RGF.RgfParams RGF.OutputParamsRgf)
+instance ToJSON   (Job RGF.InputParamsRgf RGF.RgfParams RGF.OutputParamsRgf)

@@ -6,6 +6,10 @@ module GbmParams where
 import GHC.Generics as GHC
 import Data.Aeson
 
+-----------------------------------------
+-------Datatypes for method params-------
+-----------------------------------------
+
 -- | Params of h2o.gbm procedure
 data GbmParams = 
   GbmParams { y                      :: String
@@ -59,4 +63,25 @@ generateGbmParams cfg =
     nfolds_range cfg                 <*> 
     balance_classes_range cfg        <*> 
     max_after_balance_size_range cfg <*> 
-    score_each_iteration_range cfg 
+    score_each_iteration_range cfg
+
+--------------------------------------
+-------Datatypes for method I/O-------
+--------------------------------------
+
+-- | Input params: filenames, etc.
+data InputParamsGbm = 
+  InputParamsGbm { dataFilename :: FilePath
+                 } deriving (Show, Generic)
+
+instance FromJSON InputParamsGbm
+instance ToJSON InputParamsGbm
+
+data OutputParamsGbm = 
+  OutputParamsGbm { msePlotFileName    :: FilePath
+               , confMatrixFileName :: FilePath
+               , paramsFileName     :: FilePath
+               } deriving (Show, Generic)
+
+instance FromJSON OutputParamsGbm
+instance ToJSON OutputParamsGbm

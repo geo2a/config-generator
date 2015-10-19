@@ -29,17 +29,17 @@ filenames dir = map namewrap [1..]
 -----------------------
 -------Constants-------
 -----------------------
-defaultInput :: InputParams
-defaultInput = 
-  InputParams { dataFilename = "data/trEmpt.csv"
-              }
+defaultInputGbm :: GBM.InputParamsGbm
+defaultInputGbm = 
+  InputParamsGbm { GBM.dataFilename = "data/trEmpt.csv"
+                 }
 
-defaultOutput :: OutputParams
-defaultOutput = 
-  OutputParams { msePlotFileName    = "plot.png"
-               , confMatrixFileName = "confMatr.csv"
-               , paramsFileName     = "params.json"
-               }
+defaultOutputGbm :: GBM.OutputParamsGbm
+defaultOutputGbm = 
+  OutputParamsGbm { GBM.msePlotFileName    = "plot.png"
+                  , GBM.confMatrixFileName = "confMatr.csv"
+                  , GBM.paramsFileName     = "params.json"
+                  }
 
 defaultGbmParamsRanges :: GBM.GbmParamsRanges
 defaultGbmParamsRanges = 
@@ -58,6 +58,20 @@ defaultGbmParamsRanges =
     , GBM.score_each_iteration_range   = [False]
     }
 
+defaultInputRgf :: RGF.InputParamsRgf
+defaultInputRgf = 
+  InputParamsRgf { train_x_fn = "data/train.data.x"
+                 , train_y_fn = "data/train.data.y"
+                 , test_x_fn  = "data/train.data.x"     
+                 , test_y_fn  = "data/train.data.y"    
+                 }
+
+defaultOutputRgf :: RGF.OutputParamsRgf
+defaultOutputRgf = 
+  RGF.OutputParamsRgf { evaluation_fn = "results/sample.train.evaluation"
+                      , model_fn_prefix = "results/mtrain"
+                      }
+
 defaultRgfParamsRanges :: RGF.RgfParamsRanges
 defaultRgfParamsRanges = 
   RGF.RgfParamsRanges { algorithm_range = ["RGF", "RGF_Opt", "RGF_Sib"]
@@ -70,21 +84,26 @@ defaultRgfParamsRanges =
 -----------------------
 -------Main Code-------
 -----------------------
-generateJobs :: MethodParams ranges params => ranges -> [Job params]
-generateJobs ranges = 
+generateJobs :: ( InputParams  inp
+                , MethodParams ranges params
+                , OutputParams out) 
+                => inp -> ranges -> out -> [Job inp params out]
+generateJobs inp ranges out = 
   Job                           <$>
-    [defaultInput]              <*>
+    [inp]                       <*>
     generateMethodParams ranges <*> 
-    [defaultOutput]
+    [out]
     
 
-saveJobsGbm :: [Job GbmParams] -> IO ()
+saveJobsGbm :: 
+  [Job GBM.InputParamsGbm GBM.GbmParams GBM.OutputParamsGbm] -> IO ()
 saveJobsGbm jobs = 
   zipWithM_ BS.writeFile 
             (filenames "output/") 
             (map encodePretty $ jobs)
 
-saveJobsRgf :: [Job RgfParams] -> IO ()
+saveJobsRgf :: 
+  [Job RGF.InputParamsRgf RGF.RgfParams RGF.OutputParamsRgf] -> IO ()
 saveJobsRgf jobs = 
   zipWithM_ BS.writeFile 
             (filenames "output/") 
@@ -106,4 +125,5 @@ main = do
   --    print "Error: invalid config file"
   --  Just ranges -> 
   --    saveJobsGbm $ generateJobs ranges
-  saveJobsRgf $ generateJobs defaultRgfParamsRanges
+  saveJobsRgf $ 
+    generateJobs defaultInputRgf defaultRgfParamsRanges defaultOutputRgf

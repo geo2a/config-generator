@@ -8,6 +8,10 @@ module RgfParams where
 import GHC.Generics as GHC
 import Data.Aeson
 
+-----------------------------------------
+-------Datatypes for method params-------
+-----------------------------------------
+
 -- | Params of rgf procedure
 data RgfParams = 
   RgfParams { algorithm       :: String
@@ -34,9 +38,31 @@ instance ToJSON RgfParamsRanges
 
 generateRgfParams :: RgfParamsRanges -> [RgfParams]
 generateRgfParams cfg = 
-  RgfParams             <$>
+  RgfParams                   <$>
     algorithm_range cfg       <*>  
     loss_range cfg            <*>  
     max_leaf_forest_range cfg <*>  
     test_interval_range cfg   <*>
     reg_L2_range cfg
+
+--------------------------------------
+-------Datatypes for method I/O-------
+--------------------------------------
+
+data InputParamsRgf = 
+  InputParamsRgf { train_x_fn :: FilePath
+                 , train_y_fn :: FilePath
+                 , test_x_fn  :: FilePath
+                 , test_y_fn  :: FilePath
+                 } deriving (Show, Generic)
+
+instance FromJSON InputParamsRgf
+instance ToJSON InputParamsRgf
+
+data OutputParamsRgf = 
+  OutputParamsRgf { evaluation_fn   :: FilePath
+                  , model_fn_prefix :: FilePath
+                  } deriving (Show, Generic)
+
+instance FromJSON OutputParamsRgf
+instance ToJSON OutputParamsRgf
