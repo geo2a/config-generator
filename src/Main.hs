@@ -58,12 +58,16 @@ defaultGbmParamsRanges =
     , GBM.score_each_iteration_range   = [False]
     }
 
-defaultInputRgf :: RGF.InputParamsRgf
-defaultInputRgf = 
-  InputParamsRgf { train_x_fn = "data/train.data.x"
-                 , train_y_fn = "data/train.data.y"
-                 , test_x_fn  = "data/train.data.x"     
-                 , test_y_fn  = "data/train.data.y"    
+inputRgfValidateOnTest :: RGF.InputParamsRgf
+inputRgfValidateOnTest = 
+  InputParamsRgf { RGF.train_xy_fn = ("data/train.data.x", "data/train.data.y")
+                 , RGF.test_xy_fn  = ("data/test.data.y" , "data/test.data.y")    
+                 }
+
+inputRgfValidateOnTrain :: RGF.InputParamsRgf
+inputRgfValidateOnTrain = 
+  InputParamsRgf { RGF.train_xy_fn = ("data/train.data.x", "data/train.data.y")
+                 , RGF.test_xy_fn  = ("data/train.data.y" , "data/train.data.y")    
                  }
 
 defaultOutputRgf :: RGF.OutputParamsRgf
@@ -72,13 +76,22 @@ defaultOutputRgf =
                       , model_fn_prefix = "results/mtrain"
                       }
 
+--defaultRgfParamsRanges :: RGF.RgfParamsRanges
+--defaultRgfParamsRanges = 
+--  RGF.RgfParamsRanges { algorithm_range = ["RGF", "RGF_Opt", "RGF_Sib"]
+--                      , loss_range      = ["LS", "Expo", "Log"]
+--                      , max_leaf_forest_range = [3000]
+--                      , test_interval_range = [50]
+--                      , reg_L2_range = [1, 0.1, 0.01, 0.001]
+--                      }
+
 defaultRgfParamsRanges :: RGF.RgfParamsRanges
 defaultRgfParamsRanges = 
-  RGF.RgfParamsRanges { algorithm_range = ["RGF", "RGF_Opt", "RGF_Sib"]
-                      , loss_range      = ["LS", "Expo", "Log"]
+  RGF.RgfParamsRanges { algorithm_range = ["RGF"]
+                      , loss_range      = ["LS"]
                       , max_leaf_forest_range = [3000]
                       , test_interval_range = [50]
-                      , reg_L2_range = [1, 0.1, 0.01, 0.001]
+                      , reg_L2_range = [1]
                       }
 
 -----------------------
@@ -87,12 +100,12 @@ defaultRgfParamsRanges =
 generateJobs :: ( InputParams  inp
                 , MethodParams ranges params
                 , OutputParams out) 
-                => inp -> ranges -> out -> [Job inp params out]
+                => [inp] -> ranges -> [out] -> [Job inp params out]
 generateJobs inp ranges out = 
   Job                           <$>
-    [inp]                       <*>
+    inp                         <*>
     generateMethodParams ranges <*> 
-    [out]
+    out
     
 
 saveJobsGbm :: 
@@ -107,7 +120,15 @@ saveJobsRgf ::
 saveJobsRgf jobs = 
   zipWithM_ BS.writeFile 
             (filenames "output/") 
-            (map encodePretty $ jobs)
+            (map encodePretty $ jobs)  
+
+assigneNumber jobRgf number = 
+  let OutputParamsRgf a b = outputParams jobRgf
+  in jobRgf {outputParams = 
+    OutputParamsRgf { evaluation_fn = a ++ show number
+                    , model_fn_prefix = b ++ show number
+                    }
+            }
 
 -- Слишком полиморфна, чтобы работать :(
 --saveJobs :: MethodParams ranges params => [Job params] -> IO ()
@@ -115,6 +136,11 @@ saveJobsRgf jobs =
 --  zipWithM_ BS.writeFile 
 --            (filenames "output/") 
 --            (map encodePretty $ jobs) 
+
+t = head $ generateJobs 
+      [inputRgfValidateOnTest,inputRgfValidateOnTrain]
+      defaultRgfParamsRanges
+      [defaultOutputRgf]
 
 main = do
   --args <- getArgs
@@ -126,4 +152,7 @@ main = do
   --  Just ranges -> 
   --    saveJobsGbm $ generateJobs ranges
   saveJobsRgf $ 
-    generateJobs defaultInputRgf defaultRgfParamsRanges defaultOutputRgf
+    generateJobs 
+      [inputRgfValidateOnTest,inputRgfValidateOnTrain]
+      defaultRgfParamsRanges
+      [defaultOutputRgf]

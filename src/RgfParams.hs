@@ -50,10 +50,8 @@ generateRgfParams cfg =
 --------------------------------------
 
 data InputParamsRgf = 
-  InputParamsRgf { train_x_fn :: FilePath
-                 , train_y_fn :: FilePath
-                 , test_x_fn  :: FilePath
-                 , test_y_fn  :: FilePath
+  InputParamsRgf { train_xy_fn :: (FilePath, FilePath)
+                 , test_xy_fn  :: (FilePath, FilePath)
                  } deriving (Show, Generic)
 
 instance FromJSON InputParamsRgf
