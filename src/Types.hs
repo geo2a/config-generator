@@ -10,8 +10,9 @@ import qualified Data.Text as T
 import Data.Aeson
 import GHC.Generics
 
-import GbmParams as GBM
+import GbmParams          as GBM
 import RandomForestParams as RF
+import RgfParams          as RGF
 
 -------------------------------
 -------Domain Data Types-------
@@ -28,6 +29,9 @@ instance MethodParams GBM.GbmParamsRanges GBM.GbmParams where
 instance MethodParams RF.RandomForestParamsRanges RF.RandomForestParams where
   generateMethodParams = RF.generateRandomForestParams  
 
+instance MethodParams RGF.RgfParamsRanges RGF.RgfParams where
+  generateMethodParams = RGF.generateRgfParams  
+
 -- | Params of job for h2o-cluster
 data Job a = 
   Job { inputParams  :: InputParams
@@ -40,6 +44,9 @@ instance ToJSON (Job GBM.GbmParams)
 
 instance FromJSON (Job RF.RandomForestParams)
 instance ToJSON (Job RF.RandomForestParams)
+
+instance FromJSON (Job RGF.RgfParams)
+instance ToJSON (Job RGF.RgfParams)
 
 data InputParams = 
   InputParams { dataFilename :: FilePath

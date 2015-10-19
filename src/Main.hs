@@ -13,6 +13,7 @@ import System.Environment
 import Types
 import GbmParams as GBM
 import RandomForestParams as RF
+import RgfParams as RGF
 
 ---------------------------------
 -------Auxiliary Functions-------
@@ -40,7 +41,7 @@ defaultOutput =
                , paramsFileName     = "params.json"
                }
 
-defaultGbmParamsRanges :: GbmParamsRanges
+defaultGbmParamsRanges :: GBM.GbmParamsRanges
 defaultGbmParamsRanges = 
   GBM.GbmParamsRanges 
     { GBM.y_range                      = ["y"]
@@ -57,8 +58,14 @@ defaultGbmParamsRanges =
     , GBM.score_each_iteration_range   = [False]
     }
 
-defaultRandomForestParamsRanges :: RandomForestParamsRanges
-defaultRandomForestParamsRanges = undefined
+defaultRgfParamsRanges :: RGF.RgfParamsRanges
+defaultRgfParamsRanges = 
+  RGF.RgfParamsRanges { algorithm_range = ["RGF", "RGF_Opt", "RGF_Sib"]
+                      , loss_range      = ["LS", "Expo", "Log"]
+                      , max_leaf_forest_range = [3000]
+                      , test_interval_range = [50]
+                      , reg_L2_range = [1, 0.1, 0.01, 0.001]
+                      }
 
 -----------------------
 -------Main Code-------
@@ -77,6 +84,13 @@ saveJobsGbm jobs =
             (filenames "output/") 
             (map encodePretty $ jobs)
 
+saveJobsRgf :: [Job RgfParams] -> IO ()
+saveJobsRgf jobs = 
+  zipWithM_ BS.writeFile 
+            (filenames "output/") 
+            (map encodePretty $ jobs)
+
+-- Слишком полиморфна, чтобы работать :(
 --saveJobs :: MethodParams ranges params => [Job params] -> IO ()
 --saveJobs jobs = 
 --  zipWithM_ BS.writeFile 
@@ -92,4 +106,4 @@ main = do
   --    print "Error: invalid config file"
   --  Just ranges -> 
   --    saveJobsGbm $ generateJobs ranges
-  saveJobsGbm $ generateJobs defaultGbmParamsRanges
+  saveJobsRgf $ generateJobs defaultRgfParamsRanges
