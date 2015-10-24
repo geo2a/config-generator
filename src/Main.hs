@@ -17,12 +17,12 @@ import RgfParams as RGF
 -------Auxiliary Functions-------
 ---------------------------------
 
--- | Generate infinite list of config filenames like [cfg1.json. cfg2.json,...],
+-- | Generate infinite list of config filenames like [cfg1.inp. cfg2.inp,...],
 -- | prefixed by specified dir
 filenames :: FilePath -> [FilePath]
 filenames dir = map namewrap [1..]
   where 
-    namewrap n = dir ++ "cfg" ++ show n ++ ".json" 
+    namewrap n = dir ++ "cfg" ++ show n ++ ".inp" 
 
 -----------------------
 -------Constants-------
@@ -72,9 +72,9 @@ generateJobs io ranges =
 saveJobsRgf :: 
   [Job RGF.InOutParamsRgf RGF.RgfParams] -> IO ()
 saveJobsRgf jobs = 
-  zipWithM_ BS.writeFile 
+  zipWithM_ writeFile 
             (filenames "output/") 
-            (map encodePretty $ jobs)  
+            (map encodeRgf $ jobs)  
 
 specifyYInIoParams :: InOutParamsRgf -> Int -> InOutParamsRgf
 specifyYInIoParams ioparams y =
@@ -93,6 +93,27 @@ specifyCfgNumberInIoParams ioparams n =
                            T.pack . model_fn_prefix $ ioparams
   in ioparams { model_fn_prefix = T.unpack model_fn_prefix'
               }
+
+encodeRgf :: Job RGF.InOutParamsRgf RGF.RgfParams -> String
+encodeRgf (Job ioparams params) = unlines $ 
+  [ "train_x_fn="      ++ (show . fst . train_xy_fn $ ioparams)
+  , "train_y_fn="      ++ (show . snd . train_xy_fn $ ioparams)
+  , ""
+  , "test_x_fn="       ++ (show . test_x_fn $ ioparams)
+  , ""
+  , "model_fn_prefix=" ++ (show . model_fn_prefix $ ioparams)
+  , ""
+  , if saveLastModelOnly params then "SaveLastModelOnly" else ""
+  , ""
+  , "#--- training parameters"
+  , "algorithm="       ++ (show . algorithm $ params)
+  , "reg_L2="          ++ (show . reg_L2 $ params) 
+  , "loss="            ++ (show . loss $ params) 
+  , "test_interval="   ++ (show . test_interval $ params)
+  , "max_leaf_forest=" ++ (show . max_leaf_forest $ params)
+  , if verbose params then "Verbose" else ""
+  ]
+ 
 
 main = do
   saveJobsRgf $ 
