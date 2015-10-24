@@ -14,11 +14,13 @@ import Data.Aeson
 
 -- | Params of rgf procedure
 data RgfParams = 
-  RgfParams { algorithm       :: String
-            , loss            :: String
-            , max_leaf_forest :: Int
-            , test_interval   :: Int
-            , reg_L2          :: Double
+  RgfParams { saveLastModelOnly :: Bool
+            , algorithm         :: String
+            , loss              :: String
+            , max_leaf_forest   :: Int
+            , test_interval     :: Int
+            , reg_L2            :: Double
+            , verbose           :: Bool
             } deriving (Show, GHC.Generic)
 
 instance FromJSON RgfParams
@@ -26,11 +28,13 @@ instance ToJSON RgfParams
 
 -- | Ranges of params of rgf procedure
 data RgfParamsRanges = 
-  RgfParamsRanges { algorithm_range       :: [String]
-                  , loss_range            :: [String]
-                  , max_leaf_forest_range :: [Int]
-                  , test_interval_range   :: [Int]
-                  , reg_L2_range          :: [Double]
+  RgfParamsRanges { saveLastModelOnly_range :: [Bool] 
+                  , algorithm_range         :: [String]
+                  , loss_range              :: [String]
+                  , max_leaf_forest_range   :: [Int]
+                  , test_interval_range     :: [Int]
+                  , reg_L2_range            :: [Double]
+                  , verbose_range           :: [Bool]
                   } deriving (Show, GHC.Generic)
 
 instance FromJSON RgfParamsRanges
@@ -38,29 +42,39 @@ instance ToJSON RgfParamsRanges
 
 generateRgfParams :: RgfParamsRanges -> [RgfParams]
 generateRgfParams cfg = 
-  RgfParams                   <$>
-    algorithm_range cfg       <*>  
-    loss_range cfg            <*>  
-    max_leaf_forest_range cfg <*>  
-    test_interval_range cfg   <*>
-    reg_L2_range cfg
+  RgfParams                     <$>
+    saveLastModelOnly_range cfg <*>
+    algorithm_range cfg         <*>  
+    loss_range cfg              <*>  
+    max_leaf_forest_range cfg   <*>  
+    test_interval_range cfg     <*>
+    reg_L2_range cfg            <*>
+    verbose_range cfg
 
 --------------------------------------
 -------Datatypes for method I/O-------
 --------------------------------------
 
-data InputParamsRgf = 
-  InputParamsRgf { train_xy_fn :: (FilePath, FilePath)
-                 , test_xy_fn  :: (FilePath, FilePath)
+data InOutParamsRgf =
+  InOutParamsRgf { train_xy_fn :: (FilePath, FilePath)
+                 , test_x_fn   :: FilePath
+                 , model_fn_prefix :: FilePath
                  } deriving (Show, Generic)
 
-instance FromJSON InputParamsRgf
-instance ToJSON InputParamsRgf
+instance FromJSON InOutParamsRgf
+instance ToJSON InOutParamsRgf
 
-data OutputParamsRgf = 
-  OutputParamsRgf { evaluation_fn   :: FilePath
-                  , model_fn_prefix :: FilePath
-                  } deriving (Show, Generic)
+--data InputParamsRgf = 
+--  InputParamsRgf { train_xy_fn :: (FilePath, FilePath)
+--                 , test_x_fn   :: FilePath
+--                 } deriving (Show, Generic)
 
-instance FromJSON OutputParamsRgf
-instance ToJSON OutputParamsRgf
+--instance FromJSON InputParamsRgf
+--instance ToJSON InputParamsRgf
+
+--data OutputParamsRgf = 
+--  OutputParamsRgf { model_fn_prefix :: FilePath
+--                  } deriving (Show, Generic)
+
+--instance FromJSON OutputParamsRgf
+--instance ToJSON OutputParamsRgf

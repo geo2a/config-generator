@@ -10,8 +10,6 @@ import qualified Data.Text as T
 import Data.Aeson
 import GHC.Generics
 
-import GbmParams          as GBM
-import RandomForestParams as RF
 import RgfParams          as RGF
 
 -------------------------------------
@@ -23,12 +21,6 @@ import RgfParams          as RGF
 class MethodParams ranges params | ranges -> params, params -> ranges where
   generateMethodParams :: ranges -> [params]
 
-instance MethodParams GBM.GbmParamsRanges GBM.GbmParams where
-  generateMethodParams = GBM.generateGbmParams
-
-instance MethodParams RF.RandomForestParamsRanges RF.RandomForestParams where
-  generateMethodParams = RF.generateRandomForestParams  
-
 instance MethodParams RGF.RgfParamsRanges RGF.RgfParams where
   generateMethodParams = RGF.generateRgfParams  
 
@@ -36,32 +28,19 @@ instance MethodParams RGF.RgfParamsRanges RGF.RgfParams where
 -------I\O Params Typeclasses-------
 ------------------------------------
 
-class InputParams a where
+class InOutParams a where
 
-instance InputParams GBM.InputParamsGbm
-instance InputParams RGF.InputParamsRgf
-
-class OutputParams a where
-
-instance OutputParams GBM.OutputParamsGbm
-instance OutputParams RGF.OutputParamsRgf
+instance InOutParams RGF.InOutParamsRgf
 
 -----------------------------------
 -------Resulting Job Params -------
 -----------------------------------
 
 -- | Params of job for h2o-cluster
-data Job a b c = 
-  Job { inputParams  :: a
-      , methodParams :: b
-      , outputParams :: c 
+data Job inout method = 
+  Job { ioParams     :: inout
+      , methodParams :: method
       } deriving (Show, Generic)
 
-instance FromJSON (Job GBM.InputParamsGbm GBM.GbmParams GBM.OutputParamsGbm)
-instance ToJSON   (Job GBM.InputParamsGbm GBM.GbmParams GBM.OutputParamsGbm)
-
---instance FromJSON (Job RF.RandomForestParams)
---instance ToJSON   (Job RF.RandomForestParams)
-
-instance FromJSON (Job RGF.InputParamsRgf RGF.RgfParams RGF.OutputParamsRgf)
-instance ToJSON   (Job RGF.InputParamsRgf RGF.RgfParams RGF.OutputParamsRgf)
+instance FromJSON (Job RGF.InOutParamsRgf RGF.RgfParams)
+instance ToJSON   (Job RGF.InOutParamsRgf RGF.RgfParams)
