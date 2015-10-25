@@ -14,7 +14,8 @@ import Data.Aeson
 
 -- | Params of rgf procedure
 data RgfParams = 
-  RgfParams { saveLastModelOnly :: Bool
+  RgfParams { y                 :: Int
+            , saveLastModelOnly :: Bool
             , algorithm         :: String
             , loss              :: String
             , max_leaf_forest   :: Int
@@ -28,7 +29,8 @@ instance ToJSON RgfParams
 
 -- | Ranges of params of rgf procedure
 data RgfParamsRanges = 
-  RgfParamsRanges { saveLastModelOnly_range :: [Bool] 
+  RgfParamsRanges { y_range                 :: [Int]
+                  , saveLastModelOnly_range :: [Bool] 
                   , algorithm_range         :: [String]
                   , loss_range              :: [String]
                   , max_leaf_forest_range   :: [Int]
@@ -43,6 +45,7 @@ instance ToJSON RgfParamsRanges
 generateRgfParams :: RgfParamsRanges -> [RgfParams]
 generateRgfParams cfg = 
   RgfParams                     <$>
+    y_range cfg                 <*>
     saveLastModelOnly_range cfg <*>
     algorithm_range cfg         <*>  
     loss_range cfg              <*>  

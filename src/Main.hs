@@ -49,14 +49,27 @@ ioRgfValidateOnTrain =
 
 defaultRgfParamsRanges :: RGF.RgfParamsRanges
 defaultRgfParamsRanges = 
-  RGF.RgfParamsRanges { saveLastModelOnly_range = [True]
-                      , algorithm_range         = ["RGF"]
-                      , loss_range              = ["LS"]
+  RGF.RgfParamsRanges { y_range                 = [0..6]
+                      , saveLastModelOnly_range = [True]
+                      , algorithm_range         = ["RGF", "RGF_Opt", "RGF_Sib"]
+                      , loss_range              = ["LS", "Expo", "Log"]
                       , max_leaf_forest_range   = [3000]
                       , test_interval_range     = [50]
-                      , reg_L2_range            = [1]
+                      , reg_L2_range            = [1, 0.1, 0.01, 0.001]
                       , verbose_range           = [True]
                       }
+
+--defaultRgfParamsRanges :: RGF.RgfParamsRanges
+--defaultRgfParamsRanges = 
+--  RGF.RgfParamsRanges { y_range                 = [0..6]
+--                      , saveLastModelOnly_range = [True]
+--                      , algorithm_range         = ["RGF"]
+--                      , loss_range              = ["LS", "Expo"]
+--                      , max_leaf_forest_range   = [3000]
+--                      , test_interval_range     = [50]
+--                      , reg_L2_range            = [1]
+--                      , verbose_range           = [True]
+--                      }
 
 -----------------------
 -------Main Code-------
@@ -68,40 +81,32 @@ generateJobs io ranges =
   Job                           <$>
     io                          <*>
     generateMethodParams ranges 
-    
-saveJobsRgf :: 
-  [Job RGF.InOutParamsRgf RGF.RgfParams] -> IO ()
-saveJobsRgf jobs = 
-  zipWithM_ writeFile 
-            (filenames "output/") 
-            (map encodeRgf $ jobs)  
 
-specifyYInIoParams :: InOutParamsRgf -> Int -> InOutParamsRgf
-specifyYInIoParams ioparams y =
-  let train_x_fn' = fst . train_xy_fn $ ioparams
-      train_y_fn' = substituteY $ T.pack . snd . train_xy_fn $ ioparams
-      model_fn_prefix' = substituteY $ T.pack . model_fn_prefix $ ioparams
-  in ioparams { train_xy_fn = (train_x_fn', T.unpack train_y_fn')
-              , model_fn_prefix = T.unpack model_fn_prefix'
-              }
-  where 
-    substituteY = T.replace "*" (T.pack $ show y)
+saveJobsRgf :: [Job RGF.InOutParamsRgf RGF.RgfParams] 
+            -> IO ()
+saveJobsRgf jobs =
+  let fnames = zipWith constructFileName
+                 jobs
+                 [1..] 
+  in zipWithM_ writeFile 
+               (map ("output/" ++) fnames) 
+               (map encodeRgf $ jobs)  
 
-specifyCfgNumberInIoParams :: InOutParamsRgf -> Int -> InOutParamsRgf
-specifyCfgNumberInIoParams ioparams n =
-  let model_fn_prefix' = T.replace "#" (T.pack $ show n) $ 
-                           T.pack . model_fn_prefix $ ioparams
-  in ioparams { model_fn_prefix = T.unpack model_fn_prefix'
-              }
+constructFileName :: Job RGF.InOutParamsRgf RGF.RgfParams -> Int -> FilePath 
+constructFileName (Job ioparams params) n =
+  let prefix = if T.isInfixOf "test" $ T.pack . test_x_fn $ ioparams
+               then "test"
+               else "train"
+  in prefix ++ "_predict_" ++ (show n) ++ "_" ++ (show $ y params)
 
 encodeRgf :: Job RGF.InOutParamsRgf RGF.RgfParams -> String
 encodeRgf (Job ioparams params) = unlines $ 
   [ "train_x_fn="      ++ (show . fst . train_xy_fn $ ioparams)
-  , "train_y_fn="      ++ (show . snd . train_xy_fn $ ioparams)
+  , "train_y_fn="      ++ (show . specifyY (y $ params) . snd . train_xy_fn $ ioparams)
   , ""
   , "test_x_fn="       ++ (show . test_x_fn $ ioparams)
   , ""
-  , "model_fn_prefix=" ++ (show . model_fn_prefix $ ioparams)
+  , "model_fn_prefix=" ++ (show . specifyY (y $ params) . model_fn_prefix $ ioparams)
   , ""
   , if saveLastModelOnly params then "SaveLastModelOnly" else ""
   , ""
@@ -113,15 +118,23 @@ encodeRgf (Job ioparams params) = unlines $
   , "max_leaf_forest=" ++ (show . max_leaf_forest $ params)
   , if verbose params then "Verbose" else ""
   ]
- 
+  where
+    specifyY :: Int -> FilePath -> FilePath
+    specifyY y = T.unpack . T.replace "*" (T.pack $ show y) . T.pack
 
-main = do
-  saveJobsRgf $ 
-    generateJobs
-      (zipWith specifyCfgNumberInIoParams 
-        (concat [ map (specifyYInIoParams ioRgfValidateOnTest) [0..7]
-                , map (specifyYInIoParams ioRgfValidateOnTrain) [0..7]]
-        )
-        [1..]
-      )
-      defaultRgfParamsRanges
+specifyCfgNumber :: Int 
+                 -> Job RGF.InOutParamsRgf RGF.RgfParams 
+                 -> Job RGF.InOutParamsRgf RGF.RgfParams
+specifyCfgNumber n (Job ioparams params) = 
+  let model_fn_prefix' = T.unpack . T.replace "#" (T.pack $ show n) . 
+                         T.pack . model_fn_prefix $ ioparams
+  in Job (ioparams {model_fn_prefix = model_fn_prefix'}) params
+
+main = 
+  let jobsOnTest = generateJobs [ioRgfValidateOnTest] 
+                                defaultRgfParamsRanges
+      jobsOnTrain = generateJobs [ioRgfValidateOnTrain]
+                                 defaultRgfParamsRanges
+  in saveJobsRgf $ 
+     zipWith specifyCfgNumber [1..] $ 
+     jobsOnTest ++ jobsOnTrain
