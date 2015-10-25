@@ -2,6 +2,7 @@
 
 module Main where
 
+import Data.Char (isDigit)
 import Control.Monad
 import Control.Applicative
 import Data.Aeson
@@ -85,19 +86,18 @@ generateJobs io ranges =
 saveJobsRgf :: [Job RGF.InOutParamsRgf RGF.RgfParams] 
             -> IO ()
 saveJobsRgf jobs =
-  let fnames = zipWith constructFileName
-                 jobs
-                 [1..] 
+  let fnames = map constructFileName jobs
   in zipWithM_ writeFile 
                (map ("output/" ++) fnames) 
                (map encodeRgf $ jobs)  
 
-constructFileName :: Job RGF.InOutParamsRgf RGF.RgfParams -> Int -> FilePath 
-constructFileName (Job ioparams params) n =
+constructFileName :: Job RGF.InOutParamsRgf RGF.RgfParams -> FilePath 
+constructFileName (Job ioparams params) =
   let prefix = if T.isInfixOf "test" $ T.pack . test_x_fn $ ioparams
                then "test"
                else "train"
-  in prefix ++ "_predict_" ++ (show n) ++ "_" ++ (show $ y params)
+      n = reverse . takeWhile isDigit . reverse . model_fn_prefix $ ioparams
+  in prefix ++ "_predict_" ++ n ++ "_" ++ (show $ y params)
 
 encodeRgf :: Job RGF.InOutParamsRgf RGF.RgfParams -> String
 encodeRgf (Job ioparams params) = unlines $ 
@@ -130,11 +130,17 @@ specifyCfgNumber n (Job ioparams params) =
                          T.pack . model_fn_prefix $ ioparams
   in Job (ioparams {model_fn_prefix = model_fn_prefix'}) params
 
+changeY :: RGF.RgfParamsRanges -> Int -> RGF.RgfParamsRanges 
+changeY params y = 
+  params {y_range = [y]}
 main = 
-  let jobsOnTest = generateJobs [ioRgfValidateOnTest] 
-                                defaultRgfParamsRanges
-      jobsOnTrain = generateJobs [ioRgfValidateOnTrain]
-                                 defaultRgfParamsRanges
-  in saveJobsRgf $ 
-     zipWith specifyCfgNumber [1..] $ 
+  let jobsOnTest  = concat $ 
+                    map (zipWith specifyCfgNumber [1..]) $ 
+                    map (generateJobs [ioRgfValidateOnTest]) $ 
+                                 map (changeY defaultRgfParamsRanges) [0..6]
+      jobsOnTrain = concat $ 
+                    map (zipWith specifyCfgNumber [1..]) $ 
+                    map (generateJobs [ioRgfValidateOnTrain]) $ 
+                                 map (changeY defaultRgfParamsRanges) [0..6]
+  in saveJobsRgf $  
      jobsOnTest ++ jobsOnTrain
