@@ -45,8 +45,8 @@ defaultGbmParamsRanges :: GBM.GbmParamsRanges
 defaultGbmParamsRanges = 
   GBM.GbmParamsRanges 
     { GBM.y_range                      = ["y"]
-    , GBM.xs_range                     = [[0..7] ++ [9..61] ++ [63..69]] -- без x8
-    , GBM.ntrees_range                 = [300]
+    , GBM.xs_range                     = [[0..61] ++ [63..69]]
+    , GBM.ntrees_range                 = [100]
     , GBM.max_depth_range              = [3..7]
     , GBM.min_rows_range               = [1,5,10,20,50,100,200]
     , GBM.learn_rate_range             = [0.04,0.05,0.1]
@@ -151,8 +151,5 @@ main = do
   --    print "Error: invalid config file"
   --  Just ranges -> 
   --    saveJobsGbm $ generateJobs ranges
-  saveJobsRgf $ 
-    generateJobs 
-      [inputRgfValidateOnTest,inputRgfValidateOnTrain]
-      defaultRgfParamsRanges
-      [defaultOutputRgf]
+  saveJobsGbm $ generateJobs defaultGbmParamsRanges
+  
