@@ -18,13 +18,6 @@ import RgfParams as RGF
 -------Auxiliary Functions-------
 ---------------------------------
 
--- | Generate infinite list of config filenames like [cfg1.inp. cfg2.inp,...],
--- | prefixed by specified dir
-filenames :: FilePath -> [FilePath]
-filenames dir = map namewrap [1..]
-  where 
-    namewrap n = dir ++ "cfg" ++ show n ++ ".inp" 
-
 -----------------------
 -------Constants-------
 -----------------------
@@ -97,7 +90,7 @@ constructFileName (Job ioparams params) =
                then "test"
                else "train"
       n = reverse . takeWhile isDigit . reverse . model_fn_prefix $ ioparams
-  in prefix ++ "_predict_" ++ n ++ "_" ++ (show $ y params)
+  in prefix ++ "_predict_" ++ n ++ "_" ++ (show $ y params) ++ ".inp"
 
 encodeRgf :: Job RGF.InOutParamsRgf RGF.RgfParams -> String
 encodeRgf (Job ioparams params) = unlines $ 
