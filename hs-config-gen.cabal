@@ -20,7 +20,7 @@ executable hs-config-gen
   other-modules: Types
                , GbmParams
                , RandomForestParams
-               , RgfParams      
+               , Defaults
   -- other-extensions:    
   build-depends:       base >=4.8 && <4.9
                        , text

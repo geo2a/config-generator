@@ -69,19 +69,13 @@ generateGbmParams cfg =
 -------Datatypes for method I/O-------
 --------------------------------------
 
--- | Input params: filenames, etc.
-data InputParamsGbm = 
-  InputParamsGbm { dataFilename :: FilePath
+-- | Input and output params: filenames, etc.
+data InOutParamsGbm =
+  InOutParamsGbm { dataFilename :: FilePath
+                 , msePlotFileName    :: FilePath
+                 , confMatrixFileName :: FilePath
+                 , paramsFileName     :: FilePath
                  } deriving (Show, Generic)
 
-instance FromJSON InputParamsGbm
-instance ToJSON InputParamsGbm
-
-data OutputParamsGbm = 
-  OutputParamsGbm { msePlotFileName    :: FilePath
-               , confMatrixFileName :: FilePath
-               , paramsFileName     :: FilePath
-               } deriving (Show, Generic)
-
-instance FromJSON OutputParamsGbm
-instance ToJSON OutputParamsGbm
+instance FromJSON InOutParamsGbm
+instance ToJSON InOutParamsGbm
