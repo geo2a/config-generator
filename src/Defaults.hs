@@ -15,7 +15,7 @@ defaultGbmParamsRanges :: GBM.GbmParamsRanges
 defaultGbmParamsRanges = 
   GBM.GbmParamsRanges 
     { GBM.y_range                      = ["y"]
-    , GBM.xs_range                     = [[0..61] ++ [63..69]]
+    , GBM.xs_range                     = [[1..52] ++ [54..66]]
     , GBM.ntrees_range                 = [100]
     , GBM.max_depth_range              = [3..7]
     , GBM.min_rows_range               = [1,5,10,20,50,100,200]
