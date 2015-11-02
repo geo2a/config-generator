@@ -32,8 +32,8 @@ filenames dir = map namewrap [1..]
 -------Main Code-------
 -----------------------
 generateJobs :: ( InOutParams  inout
-                , MethodParams ranges params
-                ) => [inout] -> ranges -> [Job inout params]
+                , MethodParams params
+                ) => [inout] -> Ranges params -> [Job inout params]
 generateJobs inout ranges = 
   Job                           <$>
     inout                       <*>

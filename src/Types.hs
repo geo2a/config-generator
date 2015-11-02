@@ -1,8 +1,7 @@
 {-# Language DeriveGeneric #-}
 {-# Language FlexibleInstances #-}
 {-# Language OverloadedStrings #-}
-{-# Language MultiParamTypeClasses #-}
-{-# Language FunctionalDependencies #-}
+{-# Language TypeFamilies #-}
 
 module Types where
 
@@ -19,10 +18,15 @@ import RandomForestParams as RF
 
 -- | This typeclass abstracts params generation for various methods, such as 
 -- | h2o.gbm, h2o.randomForest etc.  
-class MethodParams ranges params | ranges -> params, params -> ranges where
-  generateMethodParams :: ranges -> [params]
+--class MethodParams ranges params | ranges -> params, params -> ranges where
+--  generateMethodParams :: ranges -> [params]
 
-instance MethodParams GBM.GbmParamsRanges GBM.GbmParams where
+class MethodParams params where
+  type Ranges params :: *
+  generateMethodParams :: (Ranges params) -> [params]
+
+instance MethodParams GBM.GbmParams where
+  type Ranges GBM.GbmParams = GBM.GbmParamsRanges
   generateMethodParams = GBM.generateGbmParams
 
 ------------------------------------
